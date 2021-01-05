@@ -5,6 +5,8 @@
 #include <iostream>
 #include <cstdio>
 #include <vector>
+#include <algorithm>
+#include <iterator>
 
 #include <stdlib.h>
 #include <time.h>
@@ -44,7 +46,7 @@ int main()
 			
 		}
 
-		for (auto p : activeClients)
+		for (const auto& p : activeClients)
 		{
 			auto player = p.first;
 			auto addr = p.second;
@@ -57,9 +59,9 @@ int main()
 				float attPosX = (player.x - 128) + attX;
 				float attPosY = (player.y - 128) + attY;
 
-				for (auto playerOb : activeClients)
+				for (const auto& playerOb : activeClients)
 				{
-					auto otherPlayer = playerOb.first;
+					const auto& otherPlayer = playerOb.first;
 					if (/*playerOb.second != addr && */otherPlayer.isColliding(attPosX, attPosY))
 					{
 						RadioPoint hit;
@@ -69,28 +71,17 @@ int main()
 						attemptHits[hitCount++] = hit;
 						continue;
 					}
-
 				}
-
-				
 			}
 			Radio radioResult;
 			radioResult.count = hitCount;
-			for (int i = 0; i < radioResult.count; i++)
-			{
-				radioResult.points[i] = attemptHits[i];
-			}
 			radioResult.sequence = sequence;
+			std::copy(std::begin(attemptHits), std::begin(attemptHits) + hitCount, std::begin(radioResult.points));
 			server.send(addr, &radioResult);
 			sequence++;
 		}
-
-
 		Sleep(100/6);
 	}
-
-
-
 	socketShutDown();
 	return 0;
 }
